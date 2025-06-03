@@ -24,7 +24,7 @@ if data_key not in st.session_state:
     st.session_state[data_key] = get_initial_data()
 
 # Editable table
-st.markdown("### 📝 Edit Event Data")
+st.markdown("### Edit Event Data")
 df = st.session_state[data_key]
 edited_df = st.data_editor(
     df,
@@ -48,14 +48,14 @@ col1, col2 = st.columns([2, 1])
 
 # Chart
 with col1:
-    st.markdown("### 📈 Radar Chart")
+    st.markdown("### Radar Chart")
 
     # Filtered data will be used below after filters in col2
     filtered_data_placeholder = st.empty()
 
 # Filters and info
 with col2:
-    st.markdown("### 🔍 Filter Settings")
+    st.markdown("### Filters")
     selected_years = st.multiselect("Filter by Year", options=sorted(edited_df['Year'].unique()), default=sorted(edited_df['Year'].unique()))
     selected_events = st.multiselect("Filter by Event", options=sorted(edited_df['Event'].unique()), default=sorted(edited_df['Event'].unique()))
 
@@ -86,7 +86,7 @@ with col1:
     st.pyplot(fig)
 
 # Sidebar for navigation
-st.sidebar.title("Menu")
+st.sidebar.title("Tools")
 st.sidebar.page_link("app.py", label="4 Modules")
 st.sidebar.page_link("pages/supportlevel.py", label="Level of Support")
 st.sidebar.page_link("pages/audience.py", label="Audience")

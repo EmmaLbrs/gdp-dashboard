@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 st.set_page_config(layout="wide")
-st.title("🧭 Event Support Typology")
+st.title("Level of Support Typology")
 
 # Define editable data with levels
 support_data = pd.DataFrame([
@@ -19,7 +19,7 @@ level_mapY = {"Unbegleitet": 0.2, "Medium": 0.5, "Moderiert": 0.8}
 
 
 # Make editable
-st.markdown("### 📝 Edit Support Levels")
+st.markdown("### Edit Support Levels")
 edited_support = st.data_editor(
     support_data,
     num_rows="dynamic",
@@ -38,7 +38,7 @@ edited_support = st.data_editor(
 col1, col2 = st.columns([2, 1])
 
 with col2:
-    st.markdown("### 🔍 Filter")
+    st.markdown("### Filter")
     filter_years = st.multiselect("Year", edited_support["Year"].unique(), default=list(edited_support["Year"].unique()))
     filter_events = st.multiselect("Event", edited_support["Event"].unique(), default=list(edited_support["Event"].unique()))
     if st.button("Select All"):
@@ -81,7 +81,7 @@ with col1:
     st.pyplot(fig)
 
 # Sidebar nav
-st.sidebar.title("Menu")
+st.sidebar.title("Tools")
 st.sidebar.page_link("app.py", label="4 Modules")
 st.sidebar.page_link("pages/supportlevel.py", label="Level of Support")
 st.sidebar.page_link("pages/audience.py", label="Audience")
