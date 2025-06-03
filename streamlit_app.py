@@ -3,6 +3,7 @@ import pandas as pd
 import math
 from pathlib import Path
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 # Set the title and favicon that appear in the Browser's tab bar.
@@ -151,3 +152,40 @@ for i, country in enumerate(selected_countries):
             delta=growth,
             delta_color=delta_color
         )
+
+# Data
+data = {
+    'Name': ['F*iF', 'Tool Tuesday', 'Julie Elias', 'DatenCafe'],
+    'Community Builder': [10, 5, 5, 10],
+    'Research Accelerator': [5, 5, 10, 5],
+    'Creative Innovation Hub': [5, 5, 5, 1],
+    'Tech & Tools Depot': [1, 10, 1, 5]
+}
+
+# Extract categories and values
+categories = list(data.keys())[1:]
+names = data['Name']
+n = len(categories)
+
+# Radar chart setup
+def create_radar_chart(ax, values, label):
+    angles = np.linspace(0, 2 * np.pi, n, endpoint=False).tolist()
+    values += values[:1]
+    angles += angles[:1]
+
+    # Plot data
+    ax.fill(angles, values, alpha=0.25)
+    ax.plot(angles, values, linewidth=1, label=label)
+    ax.set_xticks(angles[:-1])
+    ax.set_xticklabels(categories)
+    ax.set_yticklabels([])
+
+# Plotting
+fig, ax = plt.subplots(figsize=(8, 8), subplot_kw={'projection': 'polar'})
+for i, name in enumerate(names):
+    values = list(data[categories[j]][i] for j in range(n))
+    create_radar_chart(ax, values, name)
+
+plt.legend(loc='upper right', bbox_to_anchor=(1.2, 1.1))
+#plt.title("Radar Chart Visualization")
+plt.show()
