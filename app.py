@@ -90,3 +90,5 @@ st.sidebar.title("Tools")
 st.sidebar.page_link("app.py", label="4 Modules")
 st.sidebar.page_link("pages/supportlevel.py", label="Level of Support")
 st.sidebar.page_link("pages/audience.py", label="Audience")
+st.sidebar.page_link("pages/space.py", label="Space and Place")
+
