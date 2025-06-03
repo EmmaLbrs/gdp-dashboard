@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 st.set_page_config(layout="wide")
-st.title("🎯 Interactive Event Role Radar")
+st.title("4 Modules")
 
 # Initial data setup
 def get_initial_data():
@@ -87,4 +87,6 @@ with col1:
 
 # Sidebar for navigation
 st.sidebar.title("Menu")
-st.sidebar.page_link("supportlevel.py", label="Level of Support")
+st.sidebar.page_link("app.py", label="4 Modules")
+st.sidebar.page_link("pages/supportlevel.py", label="Level of Support")
+st.sidebar.page_link("pages/audience.py", label="Audience")
