@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 st.set_page_config(layout="wide")
-st.title("4 Modules")
+st.title("🎯 Interactive Event Role Radar")
 
 # Initial data setup
 def get_initial_data():
@@ -23,17 +23,11 @@ data_key = "event_data"
 if data_key not in st.session_state:
     st.session_state[data_key] = get_initial_data()
 
-# Sidebar filters and options
-st.sidebar.header("⚙️ Display Options")
-all_years = sorted(st.session_state[data_key]['Year'].unique())
-selected_years = st.sidebar.multiselect("Filter by Year", options=all_years, default=all_years)
-all_events = sorted(st.session_state[data_key]['Event'].unique())
-selected_events = st.sidebar.multiselect("Filter by Event", options=all_events, default=all_events)
-
 # Editable table
 st.markdown("### 📝 Edit Event Data")
+df = st.session_state[data_key]
 edited_df = st.data_editor(
-    st.session_state[data_key],
+    df,
     num_rows="dynamic",
     use_container_width=True,
     hide_index=True,
@@ -49,25 +43,56 @@ edited_df = st.data_editor(
 )
 st.session_state[data_key] = edited_df
 
-# Filtered data for chart
-data_rows = edited_df[edited_df['Year'].isin(selected_years) & edited_df['Event'].isin(selected_events)]
+# Main layout
+col1, col2 = st.columns([2, 1])
 
-# Radar chart setup
-def create_radar_chart(ax, values, label):
-    n_categories = len(categories)
-    angles = np.linspace(0, 2 * np.pi, n_categories, endpoint=False).tolist()
-    values += values[:1]
-    angles += angles[:1]
-    ax.fill(angles, values, alpha=0.2)
-    ax.plot(angles, values, linewidth=2, label=label)
-    ax.set_xticks(angles[:-1])
-    ax.set_xticklabels(categories)
-    ax.set_yticklabels([])
+# Chart
+with col1:
+    st.markdown("### 📈 Radar Chart")
 
+    # Filtered data will be used below after filters in col2
+    filtered_data_placeholder = st.empty()
 
-fig, ax = plt.subplots(figsize=(7, 7), subplot_kw={'projection': 'polar'})
-for _, row in data_rows.iterrows():
-    values = [value_map[row[cat]] for cat in categories]
-    create_radar_chart(ax, values[:], row["Event"])
-ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1.1))
-st.pyplot(fig)
+# Filters and info
+with col2:
+    st.markdown("### 🔍 Filter Settings")
+    selected_years = st.multiselect("Filter by Year", options=sorted(edited_df['Year'].unique()), default=sorted(edited_df['Year'].unique()))
+    selected_events = st.multiselect("Filter by Event", options=sorted(edited_df['Event'].unique()), default=sorted(edited_df['Event'].unique()))
+
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        if st.button("Select All"):
+            selected_events = sorted(edited_df['Event'].unique())
+    with col_btn2:
+        if st.button("Mask All"):
+            selected_events = []
+
+    st.markdown("---")
+    st.write("**Years:**", ", ".join(selected_years))
+    st.write("**Events:**", ", ".join(selected_events))
+
+# Apply filters and render chart
+with col1:
+    data_rows = edited_df[edited_df['Year'].isin(selected_years) & edited_df['Event'].isin(selected_events)]
+
+    def create_radar_chart(ax, values, label):
+        n_categories = len(categories)
+        angles = np.linspace(0, 2 * np.pi, n_categories, endpoint=False).tolist()
+        values += values[:1]
+        angles += angles[:1]
+        ax.fill(angles, values, alpha=0.2)
+        ax.plot(angles, values, linewidth=2, label=label)
+        ax.set_xticks(angles[:-1])
+        ax.set_xticklabels(categories)
+        ax.set_yticklabels([])
+
+    fig, ax = plt.subplots(figsize=(7, 7), subplot_kw={'projection': 'polar'})
+    for _, row in data_rows.iterrows():
+        values = [value_map[row[cat]] for cat in categories]
+        create_radar_chart(ax, values[:], row["Event"])
+    ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1.1))
+    st.pyplot(fig)
+
+# Sidebar for navigation
+st.sidebar.title("Menu")
+st.sidebar.page_link("supportlevel.py", label="Level of Support")
