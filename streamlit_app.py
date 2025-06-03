@@ -59,14 +59,6 @@ with col2:
     selected_years = st.multiselect("Filter by Year", options=sorted(edited_df['Year'].unique()), default=sorted(edited_df['Year'].unique()))
     selected_events = st.multiselect("Filter by Event", options=sorted(edited_df['Event'].unique()), default=sorted(edited_df['Event'].unique()))
 
-    col_btn1, col_btn2 = st.columns(2)
-    with col_btn1:
-        if st.button("Select All"):
-            selected_events = sorted(edited_df['Event'].unique())
-    with col_btn2:
-        if st.button("Mask All"):
-            selected_events = []
-
     st.markdown("---")
     st.write("**Years:**", ", ".join(selected_years))
     st.write("**Events:**", ", ".join(selected_events))
