@@ -15,7 +15,7 @@ audience_data = pd.DataFrame([
 ])
 
 # Mapping format to x-axis values
-format_map = {"Online": 0.0, "Hybrid": 0.5, "On Site": 1.0}
+format_map = {"Online": 0.1, "Hybrid": 0.5, "On Site": 0.9}
 
 # Editable table
 st.markdown("### Edit Event Formats")
@@ -34,7 +34,7 @@ edited_data = st.data_editor(
 col1, col2 = st.columns([2, 1])
 
 with col2:
-    st.markdown("### 🔍 Filter")
+    st.markdown("### Filter")
     filter_years = st.multiselect("Year", edited_data["Year"].unique(), default=list(edited_data["Year"].unique()))
     filter_events = st.multiselect("Event", edited_data["Event"].unique(), default=list(edited_data["Event"].unique()))
     if st.button("Select All"):
