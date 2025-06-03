@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import math
 from pathlib import Path
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 
 # Set the title and favicon that appear in the Browser's tab bar.
