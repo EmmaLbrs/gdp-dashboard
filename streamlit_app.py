@@ -1,191 +1,73 @@
 import streamlit as st
-import pandas as pd
-import math
-from pathlib import Path
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
 
+st.set_page_config(layout="wide")
+st.title("4 Modules")
 
-# Set the title and favicon that appear in the Browser's tab bar.
-st.set_page_config(
-    page_title='GDP dashboard',
-    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
-)
+# Initial data setup
+def get_initial_data():
+    return pd.DataFrame([
+        {"Event": "F*iF", "Year": "2024", "Community Builder": "High", "Research Accelerator": "Medium", "Creative Innovation Hub": "Medium", "Tech & Tools Depot": "Low"},
+        {"Event": "Tool Tuesday", "Year": "2024", "Community Builder": "Medium", "Research Accelerator": "Medium", "Creative Innovation Hub": "Medium", "Tech & Tools Depot": "High"},
+        {"Event": "Julie Elias", "Year": "2024", "Community Builder": "Medium", "Research Accelerator": "High", "Creative Innovation Hub": "Medium", "Tech & Tools Depot": "Low"},
+        {"Event": "DatenCafe", "Year": "2024", "Community Builder": "High", "Research Accelerator": "Medium", "Creative Innovation Hub": "Low", "Tech & Tools Depot": "Medium"},
+    ])
 
-# -----------------------------------------------------------------------------
-# Declare some useful functions.
+categories = ['Community Builder', 'Research Accelerator', 'Creative Innovation Hub', 'Tech & Tools Depot']
+value_map = {"Low": 1, "Medium": 5, "High": 10}
 
-@st.cache_data
-def get_gdp_data():
-    """Grab GDP data from a CSV file.
+# Load or initialize session state
+data_key = "event_data"
+if data_key not in st.session_state:
+    st.session_state[data_key] = get_initial_data()
 
-    This uses caching to avoid having to read the file every time. If we were
-    reading from an HTTP endpoint instead of a file, it's a good idea to set
-    a maximum age to the cache with the TTL argument: @st.cache_data(ttl='1d')
-    """
+# Sidebar filters and options
+st.sidebar.header("⚙️ Display Options")
+all_years = sorted(st.session_state[data_key]['Year'].unique())
+selected_years = st.sidebar.multiselect("Filter by Year", options=all_years, default=all_years)
+all_events = sorted(st.session_state[data_key]['Event'].unique())
+selected_events = st.sidebar.multiselect("Filter by Event", options=all_events, default=all_events)
 
-    # Instead of a CSV on disk, you could read from an HTTP endpoint here too.
-    DATA_FILENAME = Path(__file__).parent/'data/gdp_data.csv'
-    raw_gdp_df = pd.read_csv(DATA_FILENAME)
-
-    MIN_YEAR = 1960
-    MAX_YEAR = 2022
-
-    # The data above has columns like:
-    # - Country Name
-    # - Country Code
-    # - [Stuff I don't care about]
-    # - GDP for 1960
-    # - GDP for 1961
-    # - GDP for 1962
-    # - ...
-    # - GDP for 2022
-    #
-    # ...but I want this instead:
-    # - Country Name
-    # - Country Code
-    # - Year
-    # - GDP
-    #
-    # So let's pivot all those year-columns into two: Year and GDP
-    gdp_df = raw_gdp_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'GDP',
-    )
-
-    # Convert years from string to integers
-    gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
-
-    return gdp_df
-
-gdp_df = get_gdp_data()
-
-# -----------------------------------------------------------------------------
-# Draw the actual page
-
-# Set the title that appears at the top of the page.
-'''
-# :earth_americas: GDP dashboard
-
-Browse GDP data from the [World Bank Open Data](https://data.worldbank.org/) website. As you'll
-notice, the data only goes to 2022 right now, and datapoints for certain years are often missing.
-But it's otherwise a great (and did I mention _free_?) source of data.
-'''
-
-# Add some spacing
-''
-''
-
-min_value = gdp_df['Year'].min()
-max_value = gdp_df['Year'].max()
-
-from_year, to_year = st.slider(
-    'Which years are you interested in?',
-    min_value=min_value,
-    max_value=max_value,
-    value=[min_value, max_value])
-
-countries = gdp_df['Country Code'].unique()
-
-if not len(countries):
-    st.warning("Select at least one country")
-
-selected_countries = st.multiselect(
-    'Which countries would you like to view?',
-    countries,
-    ['DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN'])
-
-''
-''
-''
-
-# Filter the data
-filtered_gdp_df = gdp_df[
-    (gdp_df['Country Code'].isin(selected_countries))
-    & (gdp_df['Year'] <= to_year)
-    & (from_year <= gdp_df['Year'])
-]
-
-st.header('GDP over time', divider='gray')
-
-''
-
-st.line_chart(
-    filtered_gdp_df,
-    x='Year',
-    y='GDP',
-    color='Country Code',
-)
-
-''
-''
-
-
-first_year = gdp_df[gdp_df['Year'] == from_year]
-last_year = gdp_df[gdp_df['Year'] == to_year]
-
-st.header(f'GDP in {to_year}', divider='gray')
-
-''
-
-cols = st.columns(4)
-
-for i, country in enumerate(selected_countries):
-    col = cols[i % len(cols)]
-
-    with col:
-        first_gdp = first_year[first_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-        last_gdp = last_year[last_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-
-        if math.isnan(first_gdp):
-            growth = 'n/a'
-            delta_color = 'off'
-        else:
-            growth = f'{last_gdp / first_gdp:,.2f}x'
-            delta_color = 'normal'
-
-        st.metric(
-            label=f'{country} GDP',
-            value=f'{last_gdp:,.0f}B',
-            delta=growth,
-            delta_color=delta_color
+# Editable table
+st.markdown("### 📝 Edit Event Data")
+edited_df = st.data_editor(
+    st.session_state[data_key],
+    num_rows="dynamic",
+    use_container_width=True,
+    hide_index=True,
+    column_config={
+        cat: st.column_config.SelectboxColumn(options=["Low", "Medium", "High"]) for cat in categories
+    } | {
+        "Year": st.column_config.TextColumn(
+            help="Enter year as a 4-digit number, e.g., 2024",
+            required=True,
+            max_chars=4
         )
+    }
+)
+st.session_state[data_key] = edited_df
 
-# Data
-data = {
-    'Name': ['F*iF', 'Tool Tuesday', 'Julie Elias', 'DatenCafe'],
-    'Community Builder': [10, 5, 5, 10],
-    'Research Accelerator': [5, 5, 10, 5],
-    'Creative Innovation Hub': [5, 5, 5, 1],
-    'Tech & Tools Depot': [1, 10, 1, 5]
-}
-
-# Extract categories and values
-categories = list(data.keys())[1:]
-names = data['Name']
-n = len(categories)
+# Filtered data for chart
+data_rows = edited_df[edited_df['Year'].isin(selected_years) & edited_df['Event'].isin(selected_events)]
 
 # Radar chart setup
 def create_radar_chart(ax, values, label):
-    angles = np.linspace(0, 2 * np.pi, n, endpoint=False).tolist()
+    n_categories = len(categories)
+    angles = np.linspace(0, 2 * np.pi, n_categories, endpoint=False).tolist()
     values += values[:1]
     angles += angles[:1]
-
-    # Plot data
-    ax.fill(angles, values, alpha=0.25)
-    ax.plot(angles, values, linewidth=1, label=label)
+    ax.fill(angles, values, alpha=0.2)
+    ax.plot(angles, values, linewidth=2, label=label)
     ax.set_xticks(angles[:-1])
     ax.set_xticklabels(categories)
     ax.set_yticklabels([])
 
-# Plotting
-fig, ax = plt.subplots(figsize=(8, 8), subplot_kw={'projection': 'polar'})
-for i, name in enumerate(names):
-    values = list(data[categories[j]][i] for j in range(n))
-    create_radar_chart(ax, values, name)
 
-plt.legend(loc='upper right', bbox_to_anchor=(1.2, 1.1))
-#plt.title("Radar Chart Visualization")
-plt.show()
+fig, ax = plt.subplots(figsize=(7, 7), subplot_kw={'projection': 'polar'})
+for _, row in data_rows.iterrows():
+    values = [value_map[row[cat]] for cat in categories]
+    create_radar_chart(ax, values[:], row["Event"])
+ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1.1))
+st.pyplot(fig)
